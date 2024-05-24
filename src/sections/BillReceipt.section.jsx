@@ -43,8 +43,14 @@ function BillReceipt() {
     let [pmId, setPmId] = useState(
         GC?.purchaseMasterData[GC?.purchaseMasterData?.length - 1]?.PM_ID + 1 || 1
     );
+    
+    let [jvmId, setJvmId] = useState(
+        GC?.journalVoucherMasterData[GC?.journalVoucherMasterData?.length - 1]?.JVM_ID + 1 || 1
+    );
     let [pmType, setPmType] = useState("");
     let [pmNo, setPmNo] = useState("");
+    let [prmTypeId, setPrmTypeId] = useState("");
+    
     let [pmInwardNo, setPmInwardNo] = useState("");
     let [pmInwardDate, setPmInwardDate] = useState("");
     let [pmReference, setPmReference] = useState("");
@@ -86,6 +92,8 @@ function BillReceipt() {
     let [pdBatchNo, setPdBatchNo] = useState("");
     let [pdDoe, setPdDoe] = useState("");
     let [pdMRP, setPdMRP] = useState("");
+    let [jvmTypeNo, setJvmTypeNo] = useState("");
+    let [jvmBackupTypeNo, setBackupJvmTypeNo] = useState("");
     let [pdPurRate, setPdPurRate] = useState("");
     let [pdSalesRate, setPdSalesRate] = useState("");
     let [pdQty, setPdQty] = useState("");
@@ -129,57 +137,46 @@ function BillReceipt() {
     // Only Called Once
     //
     useEffect(function () {
-        FetchData("POST", "/api/purchase/get-purchase-data/" + localStorage.getItem("lmId")).then(
+        FetchData("POST", "/api/vouchers/get-details/" + localStorage.getItem("lmId")).then(
             (res) => {
                 console.log(res);
+                setMaxId(res?.data?.max_id);
+                setJvmId(res?.data?.max_id + 1);
                 if (res?.isSuccess) {
                     if (res?.data) {
                         var counts = [];
-                        GC?.setPurchaseDetailsData(res?.data?.purchaseDetailsData);
-                        GC?.setPurchaseMasterData(res?.data?.purchaseMasterData);
+                        GC?.setJournalVoucherDetailsData(res?.data?.journalVoucherDetailsData);
+                        GC?.setJournalVoucherMasterData(res?.data?.journalVoucherMasterData);
 
-                        console.log(res?.data?.purchaseDetailsData);
-                        console.log(res?.data?.purchaseMasterData);
-
-                        setMaxId(res?.data?.max_id);
-                        setPmId(res?.data?.max_id + 1);
-
-                        res?.data?.purchaseMasterData.map((item) => {
+                        console.log(res?.data?.journalVoucherDetailsData);
+                        console.log(res?.data?.journalVoucherMasterData);
+                        res?.data?.journalVoucherMasterData.map((item) => {
                             if (parseInt(localStorage.getItem("lmId")) === item.COMP_ID) {
-                                console.log("d");
-                                if (item.PM_NO) {
-                                    counts.push(item.PM_NO);
+                                if (item.JVM_TYPE_WISE_ID) {
+                                    counts.push(item.JVM_TYPE_WISE_ID);
                                 } else {
                                     counts.push(0);
                                 }
                             }
                         });
+                        console.log(counts);
+
                         var maxTyepWiseId = 0;
                         if (counts.length !== 0) {
                             maxTyepWiseId = Math.max(...counts);
                         }
-                        // alert(maxTyepWiseId)
-                        setPmNo(maxTyepWiseId + 1);
-                        setbackupPNo(maxTyepWiseId + 1);
+                        setJvmTypeNo(maxTyepWiseId + 1);
+                        setBackupJvmTypeNo(maxTyepWiseId + 1);
                     }
                 } else {
-                    setPmNo(1);
-                    setMaxId(res?.data?.max_id);
-                    setPmId(res?.data?.max_id + 1);
-                    setbackupPNo(1);
-                    GC?.setPurchaseDetailsData([]);
-                    GC?.setPurchaseMasterData([]);
+                    setJvmTypeNo(1);
+                    GC?.setJournalVoucherDetailsData([]);
+                    GC?.setJournalVoucherMasterData([]);
+
                     toast.error(res?.message || "Failed to purchase data");
                 }
             }
         );
-        var l = [];
-        GC?.accountGroupData.map((element, index) => {
-            if (element.AG_NAME) {
-                l.push(element.AG_NAME);
-            }
-        });
-        setAllLedgerName(l);
     }, []);
 
       // Function to update the date and time every second
@@ -247,6 +244,7 @@ function BillReceipt() {
     }
     function clearPurchaseDetailsArry() {
         setPurchaseDetailsArray([]);
+        setJvmTypeNo(jvmBackupTypeNo);
         setPurchaseDetailsArrayTotal(0);
         setPurchaseDetailsArrayGrandTotal(0);
         setPurchaseDetailsArrayQty(0);
@@ -309,70 +307,70 @@ function BillReceipt() {
         //     return;
         // }
 
-        if (!pmReference) {
-            toast.error("Please enter Reference");
+        // if (!pmReference) {
+        //     toast.error("Please enter Reference");
 
-            let field = document.querySelector("[data-label='Reference']");
-            field?.focus();
-            field?.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-                inline: "nearest",
-            });
-            return;
-        }
+        //     let field = document.querySelector("[data-label='Reference']");
+        //     field?.focus();
+        //     field?.scrollIntoView({
+        //         behavior: "smooth",
+        //         block: "center",
+        //         inline: "nearest",
+        //     });
+        //     return;
+        // }
 
-        if (!pmPurchaseDate) {
-            toast.error("Please enter Purchase Date");
+        // if (!pmPurchaseDate) {
+        //     toast.error("Please enter Purchase Date");
 
-            let field = document.querySelector("[data-label='Purchase Date']");
-            field?.focus();
-            field?.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-                inline: "nearest",
-            });
-            return;
-        }
+        //     let field = document.querySelector("[data-label='Purchase Date']");
+        //     field?.focus();
+        //     field?.scrollIntoView({
+        //         behavior: "smooth",
+        //         block: "center",
+        //         inline: "nearest",
+        //     });
+        //     return;
+        // }
 
-        if (!pmGstType) {
-            toast.error("Please enter Gst Type");
+        // if (!pmGstType) {
+        //     toast.error("Please enter Gst Type");
 
-            let field = document.querySelector("[data-label='GST Type']");
-            field?.focus();
-            field?.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-                inline: "nearest",
-            });
-            return;
-        }
+        //     let field = document.querySelector("[data-label='GST Type']");
+        //     field?.focus();
+        //     field?.scrollIntoView({
+        //         behavior: "smooth",
+        //         block: "center",
+        //         inline: "nearest",
+        //     });
+        //     return;
+        // }
 
-        if (!pmAcName) {
-            toast.error("Please enter Ac Name");
+        // if (!pmAcName) {
+        //     toast.error("Please enter Ac Name");
 
-            let field = document.querySelector("[data-label='Ac Name']");
-            field?.focus();
-            field?.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-                inline: "nearest",
-            });
-            return;
-        }
+        //     let field = document.querySelector("[data-label='Ac Name']");
+        //     field?.focus();
+        //     field?.scrollIntoView({
+        //         behavior: "smooth",
+        //         block: "center",
+        //         inline: "nearest",
+        //     });
+        //     return;
+        // }
 
-        if (!pmLedger) {
-            toast.error("Please enter Ledger");
+        // if (!pmLedger) {
+        //     toast.error("Please enter Ledger");
 
-            let field = document.querySelector("[data-label='Ledger']");
-            field?.focus();
-            field?.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-                inline: "nearest",
-            });
-            return;
-        }
+        //     let field = document.querySelector("[data-label='Ledger']");
+        //     field?.focus();
+        //     field?.scrollIntoView({
+        //         behavior: "smooth",
+        //         block: "center",
+        //         inline: "nearest",
+        //     });
+        //     return;
+        // }
 
         // if (!pmPo) {
         //     toast.error("Please enter P.O.");
@@ -805,6 +803,8 @@ function BillReceipt() {
             pmId: pmId || null,
             pmType: pmType || null,
             pmNo: pmNo || null,
+            jvmTypeNo: jvmTypeNo || null,
+
             pmInwardNo: pmInwardNo || null,
             pmInwardDate: pmInwardDate || null,
             pmReference: pmReference || null,
@@ -972,6 +972,11 @@ function BillReceipt() {
                                 width: 150,
                             },
                             {
+                                field: "JVM_TYPE_WISE_ID",
+                                headerName: "No",
+                                width: 100,
+                            },
+                            {
                                 field: "delete", // New column for delete
                                 headerName: "Delete",
                                 width: 100,
@@ -1005,8 +1010,8 @@ function BillReceipt() {
                         className="max-h-[70vh] mt-3 overflow-auto hide-scrollbar"
                     >
                         {/* 1. Purchase Master Fields */}
-                        <div className="grid grid-cols-2 p-5 gap-x-5 gap-y-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 max-h-[70vh] overflow-y-auto hide-scrollbar">
-                            <div className="hidden">
+                        <div className="grid grid-cols-2 px-5 py-1 gap-x-5 gap-y-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-5 max-h-[70vh] overflow-y-auto hide-scrollbar">
+                            {/* <div className="hidden">
                                 <TextFieldTopLabeled
                                     label="Id"
                                     placeholder="Auto Generated"
@@ -1015,7 +1020,7 @@ function BillReceipt() {
                                     value={pmId}
                                     disabled={true}
                                 ></TextFieldTopLabeled>
-                            </div>
+                            </div> */}
                             <TextFieldTopLabeled
                                 label="Bill No"
                                 placeholder="Enter"
@@ -1030,8 +1035,8 @@ function BillReceipt() {
                                     let pmNo = typeArray?.pop()?.PM_NO + 1 || 1;
                                     setPmNo(pmNo);
                                 }}
-                                list={"purchase-type"}
-                            >
+                                list={"purchase-type"}>
+
                                 <datalist id="purchase-type" className="bg-white">
                                     {GC?.typeMasterData?.map((element, index) => {
                                         if (element.TNM_NAME === "Purchase Type") {
@@ -1059,29 +1064,34 @@ function BillReceipt() {
                                 value={pmNo}
                                 onChange={(e) => setPmNo(e.target.value)}
                             ></TextFieldTopLabeled> */}
-                        <CheckBox
-                            label="Emergency"
-                            state={isChecked}
-                            className="w-[5px]"
-                            minWidth='5px'
-                            setState={handleCheckboxChange}
-                         />
-                        <TextFieldTopLabeled
-                                label="Name"
-                                type="number"
+                            <CheckBox
+                                label="Emergency"
+                                state={isChecked}
                                 className="w-[5px]"
-                            minWidth='5px'
-                                placeholder="Enter"
-                                value={pmCrLimit}
-                                onChange={(e) => setPmCrLimit(e.target.value)}
-                         ></TextFieldTopLabeled>
-                            {/* <TextFieldTopLabeled
-                                label="Inward No"
-                                type="number"
+                                minWidth='5px'
+                                setState={handleCheckboxChange}
+                            />
+                            <TextFieldTopLabeled
+                                    label="Name"
+                                    type="text"
+                                    className="w-[100]"
+                                    minWidth={100}
+                                    placeholder="Enter"
+                                    value={pmCrLimit}
+                                    onChange={(e) => setPmCrLimit(e.target.value)}
+                            ></TextFieldTopLabeled>
+                            <TextFieldTopLabeled
+                                label="Age/Sex"
+                                lassName="w-[100]"
+                                minWidth={100}
+                                type="text"
                                 placeholder="Enter"
                                 value={pmInwardNo}
                                 onChange={(e) => setPmInwardNo(e.target.value)}
-                            ></TextFieldTopLabeled> */}
+                            ></TextFieldTopLabeled>
+                        </div>
+                        <div className="grid grid-cols-2 px-5 py-1 gap-x-5 gap-y-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 2xl:grid-cols-6 max-h-[70vh] overflow-y-auto hide-scrollbar">
+                        
                             {/* <DateTopLabeled
                                 label="Inward Date"
                                 placeholder="Enter"
@@ -1106,8 +1116,8 @@ function BillReceipt() {
                             <TextFieldTopLabeled
                                 label="Case NO"
                                 placeholder="Enter"
-                                className="w-[5px]"
-                                minWidth='5px'
+                                lassName="w-[100]"
+                                    minWidth={100}
                                 value={pmAcName}
                                 required={true}
                             >
@@ -1115,8 +1125,8 @@ function BillReceipt() {
                             <TextFieldTopLabeled
                                 label="IPD NO"
                                 placeholder="Enter"
-                                className="w-[5px]"
-                                minWidth='5px'
+                                lassName="w-[100]"
+                                    minWidth={100}
                                 required={true}
                             >
                             </TextFieldTopLabeled>
@@ -1125,8 +1135,8 @@ function BillReceipt() {
                                 label="Patient ID"
                                 type="number"
                                 placeholder="Enter"
-                                className="w-1/2"
-                                maxWidth={100}
+                                lassName="w-[100]"
+                                    minWidth={100}
                                 value={pmCrLimit}
                                 onChange={(e) => setPmCrLimit(e.target.value)}
                             ></TextFieldTopLabeled>
@@ -1134,24 +1144,30 @@ function BillReceipt() {
                             <TextFieldTopLabeled
                                 label="Address"
                                 placeholder="Enter"
+                                lassName="w-[100]"
+                                    minWidth={100}
                                 value={pmPo}
                                 onChange={(e) => setPmPo(e.target.value)}
                             ></TextFieldTopLabeled>
                              
-                            {/* <TextFieldTopLabeled
-                                label="Gross AMT"
-                                type="number"
+                            <TextFieldTopLabeled
+                                label="Cons. Dr."
+                                type="text"
+                                lassName="w-[100]"
+                                    minWidth={100}
                                 placeholder="Enter"
                                 value={pmGrossAmt}
                                 onChange={(e) => setPmGrossAmt(e.target.value)}
-                            ></TextFieldTopLabeled> */}
-                            {/* <TextFieldTopLabeled
-                                label="AMT"
-                                type="number"
+                            ></TextFieldTopLabeled> 
+                            <TextFieldTopLabeled
+                                label="Ref. Dr."
+                                type="text"
+                                lassName="w-[100]"
+                                    minWidth={100}
                                 placeholder="Enter"
                                 value={pmAmt}
                                 onChange={(e) => setPmAmt(e.target.value)}
-                            ></TextFieldTopLabeled> */}
+                            ></TextFieldTopLabeled>
                             {/* <TextFieldTopLabeled
                                 label="Total Qty"
                                 type="number"
@@ -1190,7 +1206,7 @@ function BillReceipt() {
 
                         {/* 2. Purchase Details Fields */}
                         <div className="pb-1 px-5 mt-1 mb-5 overflow-x-auto max-w-[100%]">
-                            <div className="flex flex-wrap gap-2 p-2 border rounded">
+                            <div className="flex flex-nowrap gap-2 p-2 border rounded">
                                 {/* <div className="w-[50px]">
                                     <label className="text-xs">
                                         <div className="">DB/CR</div>
@@ -1218,10 +1234,10 @@ function BillReceipt() {
                                         />
                                     </label>
                                 </div> */}
-                                <div className="grow w-[150px]">
+                                <div className="w-[30]">
                                     <label className="text-xs">
                                         <div className="">
-                                            Particular Doctor<span className="text-red-500 ml-1">*</span>
+                                            Particular <span className="text-red-500 ml-1">*</span>
                                         </div>
                                         <input
                                             type="text"
@@ -1249,9 +1265,9 @@ function BillReceipt() {
                                                 setCgst(element?.getAttribute("data-cgst") || "");
                                                 setIgst(element?.getAttribute("data-igst") || "");
                                             }}
-                                            list="itemIdList"
+                                            // list="itemIdList"
                                         />
-                                        <datalist id="itemIdList">
+                                        {/* <datalist id="itemIdList">
                                             {GC?.itemMasterData?.map((element, index) => {
                                                 return (
                                                     <option
@@ -1269,7 +1285,61 @@ function BillReceipt() {
                                                     ></option>
                                                 );
                                             })}
-                                        </datalist>
+                                        </datalist> */}
+                                    </label>
+                                </div>
+                                <div className="w-[30]">
+                                    <label className="text-xs">
+                                        <div className="">
+                                            Doctor <span className="text-red-500 ml-1">*</span>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            className="w-full p-2 mt-1 border rounded"
+                                            value={pdParticular}
+                                            onChange={(e) => {
+                                                setPdParticular(e.target.value);
+                                                let element = document.querySelector(
+                                                    `#itemIdList [value="${e.target.value}"]`
+                                                );
+
+                                                setPdId(
+                                                    element?.getAttribute("data-item-id") || ""
+                                                );
+                                                setPdPack(element?.getAttribute("data-pack") || "");
+                                                setPdMRP(element?.getAttribute("data-mrp") || "");
+                                                setPdPurRate(
+                                                    element?.getAttribute("data-purchase-rate") ||
+                                                    ""
+                                                );
+                                                setPdSalesRate(
+                                                    element?.getAttribute("data-sale-rate") || ""
+                                                );
+                                                setSgst(element?.getAttribute("data-sgst") || "");
+                                                setCgst(element?.getAttribute("data-cgst") || "");
+                                                setIgst(element?.getAttribute("data-igst") || "");
+                                            }}
+                                            // list="itemIdList"
+                                        />
+                                        {/* <datalist id="itemIdList">
+                                            {GC?.itemMasterData?.map((element, index) => {
+                                                return (
+                                                    <option
+                                                        key={index}
+                                                        value={element.IM_NAME}
+                                                        data-item-id={element.IM_ID}
+                                                        data-perticular={element.IM_NAME}
+                                                        data-pack={element.IM_PACK}
+                                                        data-mrp={element.IM_MRP}
+                                                        data-purchase-rate={element.IM_PUR_RATE}
+                                                        data-sale-rate={element.IM_SALES_RATE}
+                                                        data-sgst={element.IM_SGST}
+                                                        data-cgst={element.IM_CGST}
+                                                        data-igst={element.IM_IGST}
+                                                    ></option>
+                                                );
+                                            })}
+                                        </datalist> */}
                                     </label>
                                 </div>
                                 <div className="w-[50px]">
@@ -1280,7 +1350,25 @@ function BillReceipt() {
                                             className="w-full p-2 mt-1 border rounded"
                                             disabled={false}
                                             value={pdPack}
-                                            onChange={(e) => setPdPack(e.target.value)}
+                                            onChange={(e) => {
+                                                let rate = e.target.value;
+                                                let total = Number(pdPurRate * qty);
+                                                let discountAmount = (total * pdDiscPer) / 100;
+
+                                                let totalGst =
+                                                    Number(sgst) + Number(cgst) + Number(igst);
+                                                let totalAmtAfterGst =
+                                                    total + (total * totalGst) / 100;
+                                                
+                                                setPdSalesRate(qty * pdPack);
+                                                setPdQty(qty);
+                                                setPdTotal(pdPurRate * qty);
+                                                setPdDiscAmt(discountAmount);
+                                                setPdTotalAfterDisc(total - discountAmount);
+                                                setPdGrandTotal(total - discountAmount);
+                                                setPdPack(e.target.value)
+                                                setPdSalesRate(rate * pdPack);
+                                            }}
                                         />
                                     </label>
                                 </div>
@@ -1303,12 +1391,13 @@ function BillReceipt() {
                                                     Number(sgst) + Number(cgst) + Number(igst);
                                                 let totalAmtAfterGst =
                                                     total + (total * totalGst) / 100;
-
+                                                
+                                                setPdSalesRate(qty * pdPack);
                                                 setPdQty(qty);
                                                 setPdTotal(pdPurRate * qty);
                                                 setPdDiscAmt(discountAmount);
                                                 setPdTotalAfterDisc(total - discountAmount);
-                                                setPdGrandTotal(totalAmtAfterGst - discountAmount);
+                                                setPdGrandTotal(total - discountAmount);
                                             }}
                                         />
                                     </label>
@@ -1335,7 +1424,7 @@ function BillReceipt() {
                                             onChange={(e) => setPdDoe(e.target.value)}
                                         />
                                     </label>
-                                </div> */}
+                                </div>*/}
                              
                                 <div className="w-[80px]">
                                     <label className="text-xs">
@@ -1343,7 +1432,7 @@ function BillReceipt() {
                                         <input
                                             type="number"
                                             className="w-full p-2 mt-1 border rounded "
-                                            disabled={false}
+                                            disabled={true}
                                             value={pdSalesRate}
                                             onChange={(e) => {
                                                 setPdSalesRate(e.target.value);
@@ -1351,22 +1440,23 @@ function BillReceipt() {
                                                 // Remove calculations related to sales rate
 
                                                 // Recalculate based on purchase rate * quantity
-                                                let total = Number(pdPurRate * pdQty);
-                                                let discountAmount = (total * pdDiscPer) / 100;
+                                                // let total = Number(pdPurRate * pdQty);
+                                                // let discountAmount = (total * pdDiscPer) / 100;
 
-                                                let totalGst =
-                                                    Number(sgst) + Number(cgst) + Number(igst);
-                                                let totalAmtAfterGst =
-                                                    total + (total * totalGst) / 100;
+                                                // let totalGst =
+                                                //     Number(sgst) + Number(cgst) + Number(igst);
+                                                // let totalAmtAfterGst =
+                                                //     total + (total * totalGst) / 100;
 
-                                                setPdTotal(pdPurRate * pdQty);
-                                                setPdDiscAmt(discountAmount);
-                                                setPdTotalAfterDisc(total - discountAmount);
-                                                setPdGrandTotal(totalAmtAfterGst - discountAmount);
+                                                // setPdTotal(pdPurRate * pdQty);
+                                                // setPdDiscAmt(discountAmount);
+                                                // setPdTotalAfterDisc(total - discountAmount);
+                                                // setPdGrandTotal(total - discountAmount);
                                             }}
                                         />
                                     </label>
                                 </div>
+
                                 {/* <div className="w-[80px]">
                                     <label className="text-xs">
                                         <div className="">Pur. Rate</div>
@@ -1483,6 +1573,13 @@ function BillReceipt() {
                             value={lmNarration}
                             onChange={(e) => setLmNarration(e.target.value)}
                         ></TextFieldTopLabeled>
+                         {/* <TextFieldTopLabeled
+                            label="Type Wise No"
+                            type="number"
+                            disabled={true}
+                            placeholder="Auto"
+                            value={jvmTypeNo}
+                        ></TextFieldTopLabeled> */}
 
                                 <div onKeyDown={handlekeyAdd}>
                                     <div className="mt-4 border"></div>
@@ -1502,25 +1599,31 @@ function BillReceipt() {
                             >
                                 <thead>
                                     <tr className="text-white rounded-t bg-first [&_td]:py-2">
-                                        <td>Sr</td>
+                                        <td>Sr.</td>
                                         <td>Id</td>
-                                        <td>Particular Doctor</td>
-                                        <td>Rate</td>
+                                        <td>Particular</td>
+                                        <td>Doctor</td>
                                         {/* <td>Batch&nbsp;No</td> */}
                                         {/* <td>Expiry</td> */}
-                                        <td>Qty</td>
+                                        {/* <td>MRP</td> */}
                                         {/* <td>Pur&nbsp;rate</td> */}
                                         {/* <td>MRP</td> */}
-                                        <td>Rtae&nbsp;Qty</td>
-                                        {/* <td>Qty</td> */}
-                                        {/* <td>Free</td> */}
+                                        <td>&nbsp;rate</td>
+                                        <td>Qty</td>
+                                        <td>Rate*Qty</td>
                                         {/* <td>Total</td> */}
                                         <td>Disc&nbsp;%</td>
                                         <td>Disc&nbsp;Amt</td>
-                                        <td>Total&nbsp;after&nbsp;Disc</td>
-                                        <td>Grand&nbsp;Total</td>
-                                        <td>Delete&nbsp;</td>
-                                        {/* <td>SGST&nbsp;AMT</td>
+                                        <td>Total&nbsp;Amt</td>
+                                         {<td>Total</td>}
+
+                                        {/* <td>Total&nbsp;after&nbsp;Disc</td> */}
+                                        {/* <td>Grand&nbsp;Total</td> */}
+                                        <td>Narration</td>
+
+                                        <td>De</td>
+                                        {/* <td>SGST&nbsp;%</td>
+                                        <td>SGST&nbsp;AMT</td>
                                         <td>CGST&nbsp;%</td>
                                         <td>CGST&nbsp;AMT</td>
                                         <td>IGST&nbsp;%</td>
@@ -1531,33 +1634,26 @@ function BillReceipt() {
                                     {purchaseDetailsArray.map((element, index) => {
                                         return (
                                             <tr key={index}>
-                                                <td>
-                                                    <MdDelete
-                                                        className="text-red-500 h-5 w-5 cursor-pointer"
-                                                        onClick={() =>
-                                                            handlerPurchaseDetailsRemoveFromTable(
-                                                                element.pdId
-                                                            )
-                                                        }
-                                                    />
-                                                </td>
 
                                                 <td>{element.pdItemId}</td>
+                                                <td>{element.pdItemId}</td>
+                                                <td>{element.pdParticular}</td>
                                                 <td>{element.pdParticular}</td>
                                                 <td>{element.pdPack}</td>
-                                                <td>{element.pdBatchNo}</td>
-                                                {/* <td className="min-w-[200px]">{element.pdDoe}</td> */}
-                                                <td>{element.pdMRP}</td>
-                                                <td>{element.pdPurRate}</td>
-                                                <td>{element.pdSalesRate}</td>
                                                 <td>{element.pdQty}</td>
-                                                <td>{element.pdFree}</td>
-                                                <td>{element.pdTotal}</td>
+                                                <td>{element.pdSalesRate}</td>
                                                 <td>{element.pdDiscPer}</td>
                                                 <td>{element.pdDiscAmt}</td>
                                                 <td>{element.pdTotalAfterDisc}</td>
                                                 <td>{element.pdGrandTotal}</td>
-                                                <td>{element.sgst}</td>
+                                                <td>{element.lmNarration}</td>
+                                                {/* <td>{element.pdPurRate}</td> */}
+                                                {/* <td>{element.pdBatchNo}</td> */}
+                                                {/* <td className="min-w-[200px]">{element.pdDoe}</td> */}
+                                                {/* <td>{element.pdMRP}</td>
+                                                <td>{element.pdFree}</td>
+                                                <td>{element.pdTotal}</td> */}
+                                                {/* <td>{element.sgst}</td>
                                                 <td>
                                                     {(element.pdTotalAfterDisc * element.sgst) /
                                                         100}
@@ -1571,6 +1667,16 @@ function BillReceipt() {
                                                 <td>
                                                     {(element.pdTotalAfterDisc * element.igst) /
                                                         100}
+                                                </td> */}
+                                                <td>
+                                                    <MdDelete
+                                                        className="text-red-500 h-5 w-5 cursor-pointer"
+                                                        onClick={() =>
+                                                            handlerPurchaseDetailsRemoveFromTable(
+                                                                element.pdId
+                                                            )
+                                                        }
+                                                    />
                                                 </td>
                                             </tr>
                                         );
@@ -1580,44 +1686,44 @@ function BillReceipt() {
                         </div>
 
                         {/* 5. Fields */}
-                        <div className="grid grid-cols-1 px-5 pb-5 gap-x-4 gap-y-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 max-h-[70vh] overflow-y-auto hide-scrollbar">
-                            <div className="col-span-2">
-                                <TextFieldTopLabeled
-                                    label="Narration"
-                                    className="max-w-[400px]"
-                                    minWidth={400}
-                                    placeholder="Enter"
-                                    value={pmnarration}
-                                    onChange={(e) => setPmnarration(e.target.value)}
-                                ></TextFieldTopLabeled>
-                            </div>
+                        <div className="grid grid-cols-1 px-5 pb-5 gap-x-4 gap-y-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3 max-h-[70vh] overflow-y-auto hide-scrollbar">
                             <TextFieldTopLabeled
-                                label="Total Qty"
-                                className="w-[100px]"
-                                width={50}
+                                label="Company A AMT"
+                                className="w-[100]"
+                                width={100}
                                 type="number"
                                 disabled={true}
                                 placeholder="Auto"
                                 value={purchaseDetailsArrayQty}
                             ></TextFieldTopLabeled>
                             <TextFieldTopLabeled
-                                label="AMT (Tax excluded)"
+                                label="Company B AMT"
                                 type="number"
-                                width={50}
-                                className="w-[100px]"
+                                className="w-[100]"
+                                width={100}
                                 disabled={true}
                                 placeholder="Auto"
                                 value={pdExcludedTotal}
                             ></TextFieldTopLabeled>
                             <TextFieldTopLabeled
-                                label="AMT (Tax included)"
+                                label="Grand Total"
                                 type="number"
-                                width={50}
-                                className="w-[100px]"
+                                className="w-[100]"
+                                width={100}
                                 disabled={true}
                                 placeholder="Auto"
                                 value={purchaseDetailsArrayGrandTotal}
                             ></TextFieldTopLabeled>
+                            <div className="col-span-3">
+                                <TextFieldTopLabeled
+                                    label="Narration"
+                                    className="w-[100]"
+                                    minWidth={200}
+                                    placeholder="Enter"
+                                    value={pmnarration}
+                                    onChange={(e) => setPmnarration(e.target.value)}
+                                ></TextFieldTopLabeled>
+                            </div>
                         </div>
                     </div>
 

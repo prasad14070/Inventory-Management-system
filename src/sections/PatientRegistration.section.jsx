@@ -713,7 +713,7 @@ function PatientRegistration() {
                     title2={"Patient Registration"}
                 >
                     <div
-                        className="grid grid-cols-1 p-5 gap-x-4 gap-y-3 md:grid-cols-1 lg:grid-cols-5 xl:lg:grid-cols-7 max-h-[77vh] overflow-y-auto hide-scrollbar"
+                        className="grid grid-cols-1 p-0.4 gap-x-10 gap-y-1 md:grid-cols-1 lg:grid-cols-5 xl:lg:grid-cols-5 max-h-[30vh] overflow-y-auto hide-scrollbar"
                         onKeyDown={handleKeyPress}>
                        
                         <input
@@ -755,8 +755,12 @@ function PatientRegistration() {
                             minWidth='5px'
                             setState={handleCheckboxMLC}
                          />
+                    </div>
+                    <div
+                        className="grid grid-cols-1 p-0.4 gap-x-4 gap-y-1 md:grid-cols-1 lg:grid-cols-5 xl:lg:grid-cols-2 max-h-[30vh] overflow-y-auto hide-scrollbar"
+                        onKeyDown={handleKeyPress}>
                         
-                        <div className="w-[80px]">
+                        <div className="w-[100]">
                                 <label className="text-xs">
                                     <div className="">
                                         Old Case<span className="text-red-600">*</span>
@@ -787,12 +791,10 @@ function PatientRegistration() {
                     </div>
                     
                     
-                    <div className="grid grid-cols-1 p-5 md:grid-cols-2 lg:grid-cols-6 gap-10"
-                        onKeyDown={handleKeyPress}
-                    >
-                
+                        <div className="grid grid-cols-1 p-0.4 md:grid-cols-4 lg:grid-cols-4 gap-10"
+                            onKeyDown={handleKeyPress}>
 
-                        <div className="w-[60px]">
+                            <div className="w-[100]">
                                 <label className="text-xs">
                                     <div className="">
                                         OPD/IPD<span className="text-red-600">*</span>
@@ -812,7 +814,7 @@ function PatientRegistration() {
                                     </datalist>
                                 </label>
                             </div>
-                        <div className="w-[65px]">
+                            <div className="w-[100p%]">
                                 <label className="text-xs">
                                     <div className="">
                                         Title<span className="text-red-600">*</span>
@@ -834,17 +836,17 @@ function PatientRegistration() {
                             </div>
                             
                            
-                        <TextFieldTopLabeled
-                            className="w-full"
-                            minWidth={150}
-                            label="Name"
-                            placeholder="Enter"
-                            required={true}
-                            value={lmName}
-                            onChange={(e) => setLmName(e.target.value)}
-                            id="ledger-master-id"
-                        ></TextFieldTopLabeled>
-                          <div className="w-[80px]">
+                            <TextFieldTopLabeled
+                                className="w-full"
+                                minWidth={150}
+                                label="Name"
+                                placeholder="Enter"
+                                required={true}
+                                value={lmName}
+                                onChange={(e) => setLmName(e.target.value)}
+                                id="ledger-master-id"
+                            ></TextFieldTopLabeled>
+                          <div className="w-[100]">
                                 <label className="text-xs">
                                     <div className="">
                                         Gender<span className="text-red-600">*</span>
@@ -863,7 +865,12 @@ function PatientRegistration() {
                                        
                                     </datalist>
                                 </label>
-                            </div>
+                            </div>                       
+                        </div>
+                        <div
+                            className="grid grid-cols-1 p-0.4 gap-x-4 gap-y-1 md:grid-cols-1 lg:grid-cols-4 xl:lg:grid-cols-6 max-h-[30vh] overflow-y-auto hide-scrollbar"
+                            onKeyDown={handleKeyPress}>
+
                             <div className="w-[100px]">
                                 <label className="text-xs">
                                     <div className="">
@@ -884,119 +891,84 @@ function PatientRegistration() {
                                     </datalist>
                                 </label>
                             </div>
-                         <FileUploadTopLabeled
-                            label="Photo"
-                            // value={lmLogo}
-                            files={lmLogo}
-                            // className="w-1/2"
-                            className="w-full "
-                            minWidth={150}
-                            // minWidth='5px'
-                            onChange={(e) => setLmLogo(e.target.files[0])}
-                            accept="image/*"
-                        ></FileUploadTopLabeled>
-
-                       
-                      </div>
-                      <div
-                        className="grid grid-cols-1 p-5 gap-x-4 gap-y-3 md:grid-cols-1 lg:grid-cols-4 xl:lg:grid-cols-7 max-h-[77vh] overflow-y-auto hide-scrollbar"
-                        onKeyDown={handleKeyPress}
-                    >
-                       
-                       <DateTopLabeled
-                            label="Date"
-                            value={prmDate}
-                            onChange={(e) => handleDateChange(e.target.value)}
-                            className="w-[10px]"
-                            minWidth="5px"
-                        />
-                        <div className="w-[80px]">
-                            <label className="text-xs">
-                                <div>Year</div>
-                                <input
-                                    type="text"
-                                    className="w-full p-2 mt-1 border rounded"
-                                    value={age}
-                                    disabled
-                                />
-                            </label>
-                        </div>
-                        <div className="w-[80px]">
-                            <label className="text-xs">
-                                <div>Month</div>
-                                <input
-                                    type="text"
-                                    className="w-full p-2 mt-1 border rounded"
-                                    value={monthDiff}
-                                    disabled
-                                />
-                            </label>
-                        </div>
-                        <div className="w-[80px]">
-                            <label className="text-xs">
-                                <div>Days</div>
-                                <input
-                                    type="text"
-                                    className="w-full p-2 mt-1 border rounded"
-                                    value={dayDiff}
-                                    disabled
-                                />
-                            </label>
-                        </div>
-                        <TextFieldTopLabeled
+                            <FileUploadTopLabeled
+                                label="Photo"
+                                // value={lmLogo}
+                                files={lmLogo}
+                                // className="w-1/2"
                                 className="w-full "
-                                minWidth={100}
-                                label="Mobile Number"
-                                placeholder="Enter"
-                                required={true}
-                                value={lmMobile}
-                                onChange={(e) => setLmMobile(e.target.value)}
-                                id="ledger-master-id"
-                        ></TextFieldTopLabeled>
-                         <TextFieldTopLabeled
-                            className="w-full "
-                            minWidth={100}
-                            label="Phone Number"
-                            placeholder="Enter"
-                            required={true}
-                            value={lmPhone}
-                            onChange={(e) => setLmPhone(e.target.value)}
-                            id="ledger-master-id"
-                        ></TextFieldTopLabeled>
-                        <TextFieldTopLabeled
-                        className="w-full "
-                        minWidth={100}
-                        label="Email Address"
-                        placeholder="Enter"
-                        required={true}
-                        value={lmEmail}
-                        onChange={(e) => setLmEmail(e.target.value)}
-                        id="ledger-master-id"
-                    ></TextFieldTopLabeled>
-
-                  
-                         
-                        </div>
+                                minWidth={150}
+                                // minWidth='5px'
+                                onChange={(e) => setLmLogo(e.target.files[0])}
+                                accept="image/*"
+                            ></FileUploadTopLabeled>
+                       
+                            <DateTopLabeled
+                                    label="DOB"
+                                    value={prmDate}
+                                    onChange={(e) => handleDateChange(e.target.value)}
+                                    className="w-[100]"
+                                    minWidth="5px"
+                                />
+                                <div className="w-[100]">
+                                    <label className="text-xs">
+                                        <div>Year</div>
+                                        <input
+                                            type="text"
+                                            className="w-full p-2 mt-1 border rounded"
+                                            value={age}
+                                            disabled
+                                        />
+                                    </label>
+                                </div>
+                                <div className="w-[100]">
+                                    <label className="text-xs">
+                                        <div>Month</div>
+                                        <input
+                                            type="text"
+                                            className="w-full p-2 mt-1 border rounded"
+                                            value={monthDiff}
+                                            disabled
+                                        />
+                                    </label>
+                                </div>
+                                <div className="w-[100]">
+                                    <label className="text-xs">
+                                        <div>Days</div>
+                                        <input
+                                            type="text"
+                                            className="w-full p-2 mt-1 border rounded"
+                                            value={dayDiff}
+                                            disabled
+                                        />
+                                    </label>
+                                </div>                       
+                            </div>
 
                         <div
-                        className="grid grid-cols-1 p-5 gap-x-4 gap-y-3 md:grid-cols-1 lg:grid-cols-4 xl:lg:grid-cols-3  max-h-[77vh] overflow-y-auto hide-scrollbar"
-                        onKeyDown={handleKeyPress}
-                    >
+                        className="grid grid-cols-1 p-0.4 gap-x-4 gap-y-1 md:grid-cols-1 lg:grid-cols-4 xl:lg:grid-cols-6  max-h-[30vh] overflow-y-auto hide-scrollbar"
+                        onKeyDown={handleKeyPress}>
                         
                         <TextFieldTopLabeled
                             label="Address"
+                            className="w-full "
+                            minWidth={100}
                             placeholder="Enter"
                             value={lmAddress}
                             onChange={(e) => setLmAddress(e.target.value)}
                         ></TextFieldTopLabeled>
                          <TextFieldTopLabeled
                             label="Area"
+                            className="w-full "
+                            minWidth={100}
                             placeholder="Enter"
                             value={lmArea}
                             onChange={(e) => setLmArea(e.target.value)}
                         ></TextFieldTopLabeled>
                         <TextFieldTopLabeled
                             label="City"
+                            className="w-full "
+                            minWidth={100}
                             value={lmCity}
                             onChange={(e) => setLmCity(e.target.value)}
                             list={"cityData"}
@@ -1028,13 +1000,46 @@ function PatientRegistration() {
                             </datalist>
                             
                         </TextFieldTopLabeled>
-                        </div>
+
+                        <TextFieldTopLabeled
+                                className="w-full "
+                                minWidth={100}
+                                label="Mobile Number"
+                                placeholder="Enter"
+                                required={true}
+                                value={lmMobile}
+                                onChange={(e) => setLmMobile(e.target.value)}
+                                id="ledger-master-id"
+                        ></TextFieldTopLabeled>
+
+                         <TextFieldTopLabeled
+                            className="w-full "
+                            minWidth={100}
+                            label="Phone Number"
+                            placeholder="Enter"
+                            required={true}
+                            value={lmPhone}
+                            onChange={(e) => setLmPhone(e.target.value)}
+                            id="ledger-master-id"
+                        ></TextFieldTopLabeled>
+
+                        <TextFieldTopLabeled
+                            className="w-full "
+                            minWidth={100}
+                            label="Email Address"
+                            placeholder="Enter"
+                            required={true}
+                            value={lmEmail}
+                            onChange={(e) => setLmEmail(e.target.value)}
+                            id="ledger-master-id"
+                        ></TextFieldTopLabeled>
+                    </div>
                        
                         <div
-                        className="grid grid-cols-1 p-5 gap-x-4 gap-y-3 md:grid-cols-1 lg:grid-cols-5 xl:lg:grid-cols-5  max-h-[77vh] overflow-y-auto hide-scrollbar"
-                        onKeyDown={handleKeyPress}
-                    >
-                         <div className="w-[150px]">
+                            className="grid grid-cols-1 p-0.4 gap-x-4 gap-y-1 md:grid-cols-1 lg:grid-cols-3 xl:lg:grid-cols-3  max-h-[30vh] overflow-y-auto hide-scrollbar"
+                            onKeyDown={handleKeyPress}>
+
+                         <div className="w-[100]">
                                 <label className="text-xs">
                                     <div className="">
                                         Company/TPA<span className="text-red-600">*</span>
@@ -1055,7 +1060,7 @@ function PatientRegistration() {
                                     </datalist>
                                 </label>
                             </div>
-                            <div className="w-[150px]">
+                            <div className="w-[100]">
                                 <label className="text-xs">
                                     <div className="">
                                         Reference Doctor<span className="text-red-600">*</span>
@@ -1076,7 +1081,7 @@ function PatientRegistration() {
                                     </datalist>
                                 </label>
                             </div>
-                            <div className="w-[150px]">
+                            <div className="w-[100]">
                                 <label className="text-xs">
                                     <div className="">
                                         Consulting Doctor<span className="text-red-600">*</span>
@@ -1097,30 +1102,32 @@ function PatientRegistration() {
                                     </datalist>
                                 </label>
                             </div>
-                        <TextFieldTopLabeled
-                            label="Reg Charge"
-                            className="w-[5px]"
-                            minWidth='5px'
-                            placeholder="Enter"
-                            value={lmRegCharge}
-                            onChange={(e) => setLmRegCharge(e.target.value)}
-                        ></TextFieldTopLabeled>
-                        <TextFieldTopLabeled
-                            label="Narration"
-                            type="text"
-                            className="w-[5px]"
-                            minWidth='5px'
-                            placeholder="Enter"
-                            value={lmNarration}
-                            onChange={(e) => setLmNarration(e.target.value)}
-                        ></TextFieldTopLabeled>
-                       
-                       
+                        </div>
+                        <div
+                            className="grid grid-cols-1 p-0.4 gap-x-4 gap-y-1 md:grid-cols-1 lg:grid-cols-2 xl:lg:grid-cols-2  max-h-[30vh] overflow-y-auto hide-scrollbar"
+                            onKeyDown={handleKeyPress}>
 
-                   
-                         </div>
-                    <div className="flex justify-center gap-5 mt-5" onKeyDown={handleKeyPress}>
-                        {canEdit ? (
+                            <TextFieldTopLabeled
+                                label="Reg Charge"
+                                className="w-[100]"
+                                minWidth={100}
+                                placeholder="Enter"
+                                value={lmRegCharge}
+                                onChange={(e) => setLmRegCharge(e.target.value)}
+                            ></TextFieldTopLabeled>
+                            <TextFieldTopLabeled
+                                label="Narration"
+                                type="text"
+                                className="w-[100]"
+                                minWidth={100}
+                                placeholder="Enter"
+                                value={lmNarration}
+                                onChange={(e) => setLmNarration(e.target.value)}
+                            ></TextFieldTopLabeled>
+                       
+                        </div>
+                        <div className="flex justify-center gap-5 mt-5" onKeyDown={handleKeyPress}>
+                            {canEdit ? (
                             <div>
                                 <CustomButton1
                                     label={"Submit"}
