@@ -22,8 +22,8 @@ function BillReceipt() {
     //
     let GC = useContext(GlobalContext);
 
-    let date = new Date();
-    let dateFiledFormat = `${date.getFullYear()}-${date.getMonth() + 1}-${date
+    let datee = new Date();
+    let dateFiledFormat = `${datee.getFullYear()}-${datee.getMonth() + 1}-${datee
         .getUTCDate()
         .toLocaleString("US", {
             minimumIntegerDigits: 2,
@@ -43,14 +43,14 @@ function BillReceipt() {
     let [pmId, setPmId] = useState(
         GC?.purchaseMasterData[GC?.purchaseMasterData?.length - 1]?.PM_ID + 1 || 1
     );
-    
+   
     let [jvmId, setJvmId] = useState(
         GC?.journalVoucherMasterData[GC?.journalVoucherMasterData?.length - 1]?.JVM_ID + 1 || 1
     );
     let [pmType, setPmType] = useState("");
     let [pmNo, setPmNo] = useState("");
     let [prmTypeId, setPrmTypeId] = useState("");
-    
+   
     let [pmInwardNo, setPmInwardNo] = useState("");
     let [pmInwardDate, setPmInwardDate] = useState("");
     let [pmReference, setPmReference] = useState("");
@@ -85,17 +85,19 @@ function BillReceipt() {
     // FormData states
     // Purchase Details
     //
+    const [date, setDate] = useState(formattedDate);
+    const [time, setTime] = useState("");
     let [pdDbCr, setPdDbCr] = useState("CR");
     let [pdId, setPdId] = useState("");
     let [pdParticular, setPdParticular] = useState("");
-    let [pdPack, setPdPack] = useState("");
+    let [pdRate, setpdRate] = useState("");
     let [pdBatchNo, setPdBatchNo] = useState("");
     let [pdDoe, setPdDoe] = useState("");
     let [pdMRP, setPdMRP] = useState("");
     let [jvmTypeNo, setJvmTypeNo] = useState("");
     let [jvmBackupTypeNo, setBackupJvmTypeNo] = useState("");
     let [pdPurRate, setPdPurRate] = useState("");
-    let [pdSalesRate, setPdSalesRate] = useState("");
+    let [pdRateQty, setpdRateQty] = useState("");
     let [pdQty, setPdQty] = useState("");
     let [pdFree, setPdFree] = useState("");
     let [pdTotal, setPdTotal] = useState("");
@@ -119,6 +121,7 @@ function BillReceipt() {
     // Toal, Grand Total, Qty
     //
     let [purchaseDetailsArray, setPurchaseDetailsArray] = useState([]);
+    const [cumulativeTotal, setCumulativeTotal] = useState(0);
     let [purchaseDetailsArrayTotal, setPurchaseDetailsArrayTotal] = useState(0);
     let [purchaseDetailsArrayGrandTotal, setPurchaseDetailsArrayGrandTotal] = useState(0);
     let [purchaseDetailsArrayQty, setPurchaseDetailsArrayQty] = useState(0);
@@ -130,54 +133,64 @@ function BillReceipt() {
     // For PDF And CSV
     //
     let [apiRef, setApiRef] = useState();
-    const result = pdSalesRate *pdQty ;
+    const result = pdRateQty *pdQty ;
+
+    const [companyAmountFields, setCompanyAmountFields] = useState([{ company: '', amount: 0 }]);
+
+
+
+    const addCompanyAmountField = () => {
+        if (companyAmountFields.length < 3) {
+            setCompanyAmountFields([...companyAmountFields, { company: '', amount: 0 }]);
+        }
+    };
+   
+    const handleCompanyAmountChange = (index, key, value) => {
+        const updatedFields = [...companyAmountFields];
+        updatedFields[index][key] = value;
+        setCompanyAmountFields(updatedFields);
+    };
+   
+    const removeCompanyAmountField = (index) => {
+        if (companyAmountFields.length > 1) {
+            const updatedFields = companyAmountFields.filter((_, i) => i !== index);
+            setCompanyAmountFields(updatedFields);
+        }
+    };
 
     //
     // Fetch Purchase Master and Purchase Detail Data
     // Only Called Once
     //
-    useEffect(function () {
-        FetchData("POST", "/api/vouchers/get-details/" + localStorage.getItem("lmId")).then(
-            (res) => {
-                console.log(res);
-                setMaxId(res?.data?.max_id);
-                setJvmId(res?.data?.max_id + 1);
-                if (res?.isSuccess) {
-                    if (res?.data) {
-                        var counts = [];
-                        GC?.setJournalVoucherDetailsData(res?.data?.journalVoucherDetailsData);
-                        GC?.setJournalVoucherMasterData(res?.data?.journalVoucherMasterData);
+    useEffect(() => {
+        let total = 0;
+        purchaseDetailsArray.forEach((element) => {
+            total += parseFloat(element.pdGrandTotal) || 0;
+        });
+        setCumulativeTotal(total);
+    }, [purchaseDetailsArray]);
 
-                        console.log(res?.data?.journalVoucherDetailsData);
-                        console.log(res?.data?.journalVoucherMasterData);
-                        res?.data?.journalVoucherMasterData.map((item) => {
-                            if (parseInt(localStorage.getItem("lmId")) === item.COMP_ID) {
-                                if (item.JVM_TYPE_WISE_ID) {
-                                    counts.push(item.JVM_TYPE_WISE_ID);
-                                } else {
-                                    counts.push(0);
-                                }
-                            }
-                        });
-                        console.log(counts);
 
-                        var maxTyepWiseId = 0;
-                        if (counts.length !== 0) {
-                            maxTyepWiseId = Math.max(...counts);
-                        }
-                        setJvmTypeNo(maxTyepWiseId + 1);
-                        setBackupJvmTypeNo(maxTyepWiseId + 1);
-                    }
-                } else {
-                    setJvmTypeNo(1);
-                    GC?.setJournalVoucherDetailsData([]);
-                    GC?.setJournalVoucherMasterData([]);
-
-                    toast.error(res?.message || "Failed to purchase data");
-                }
-            }
-        );
-    }, []);
+    const handleTodaysDate = (newDate) => {
+        setDate(newDate);
+    };
+    const [data, setData] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isError, setIsError] = useState(false);
+    const fetchData = async () => {
+        setIsLoading(true);
+        setIsError(false);
+        try {
+          const response = await axios.get('https://your-backend-api.com/data');
+          setData(response.data);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+          setIsError(true);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+    
 
       // Function to update the date and time every second
       const intervalId = setInterval(() => {
@@ -189,17 +202,18 @@ function BillReceipt() {
         const minutes = currentDate.getMinutes().toString().padStart(2, "0");
         const seconds = currentDate.getSeconds().toString().padStart(2, "0");
 
-  
+ 
         // Update the state with the current date and time
         setDateTime(`${year}-${month}-${day} ${hours}:${minutes}:${seconds}`);
       }, 1000); // Update every second
-  
+ 
     //
     // Clear Form
     //
     function clearPurchaseMasterForm() {
         setPmType("");
         setPmNo(backupPNo);
+        setJvmTypeNo(jvmBackupTypeNo);
         setPmInwardNo("");
         setPmInwardDate("");
         setPmReference("");
@@ -225,12 +239,12 @@ function BillReceipt() {
         setPdDbCr("CR");
         setPdId("");
         setPdParticular("");
-        setPdPack("");
+        setpdRate("");
         setPdBatchNo("");
         setPdDoe("");
         setPdMRP("");
         setPdPurRate("");
-        setPdSalesRate("");
+        setpdRateQty("");
         setPdQty("");
         setPdFree("");
         setPdTotal("");
@@ -496,27 +510,27 @@ function BillReceipt() {
         }
 
 
-        if (!pdParticular) {
-            toast.error("Please enter Particular");
-            return;
-        }
+        // if (!pdParticular) {
+        //     toast.error("Please enter Particular");
+        //     return;
+        // }
 
-        if (!pdPack) {
-            toast.error("Please enter Pack");
-            return;
-        }
+        // if (!pdRate) {
+        //     toast.error("Please enter Pack");
+        //     return;
+        // }
 
-        if (!pdMRP) {
-            toast.error("Please enter MRP");
-            return;
-        }
+        // if (!pdMRP) {
+        //     toast.error("Please enter MRP");
+        //     return;
+        // }
 
-        if (!pdPurRate) {
-            toast.error("Please enter Pur Rate");
-            return;
-        }
+        // if (!pdPurRate) {
+        //     toast.error("Please enter Pur Rate");
+        //     return;
+        // }
 
-        if (!pdSalesRate) {
+        if (!pdRateQty) {
             toast.error("Please enter Sales Rate");
             return;
         }
@@ -526,10 +540,10 @@ function BillReceipt() {
             return;
         }
 
-        if (!pdTotal) {
-            toast.error("Please enter Total");
-            return;
-        }
+        // if (!pdTotal) {
+        //     toast.error("Please enter Total");
+        //     return;
+        // }
 
         setPurchaseDetailsArrayGrandTotal((old) => {
             return old + pdGrandTotal;
@@ -543,12 +557,12 @@ function BillReceipt() {
             pdDbCr,
             pdId,
             pdParticular,
-            pdPack,
+            pdRate,
             pdBatchNo,
             pdDoe,
             pdMRP,
             pdPurRate,
-            pdSalesRate,
+            pdRateQty,
             pdQty,
             pdFree,
             pdTotal,
@@ -613,7 +627,7 @@ function BillReceipt() {
 
            
 
-            
+           
         } else {
             // Handle case where the item to be removed is not found
             toast.error("Item not found in the array");
@@ -638,6 +652,9 @@ function BillReceipt() {
                 setPmLedgerId(element.AG_ID);
             }
         });
+
+        // const now = new Date();
+        // setTime(now.toTimeString().split(' ')[0]); // Set current time in HH:MM:SS format
 
         setPmType("Retail");
         let typeArray = GC?.purchaseMasterData?.filter((element) => element.PM_TYPE === "Retail");
@@ -716,12 +733,12 @@ function BillReceipt() {
                         pdId: element.PD_ID,
                         pdItemId: element.PD_ITEM_ID,
                         pdParticular: item_name,
-                        pdPack: element.PD_PACK,
+                        pdRate: element.PD_PACK,
                         pdBatchNo: element.PD_BATCH,
                         pdDoe: element.PD_DOE,
                         pdMRP: element.PD_MRP,
                         pdPurRate: element.PD_PUR_RATE,
-                        pdSalesRate: element.PD_SALES_RATE,
+                        pdRateQty: element.PD_SALES_RATE,
                         pdQty: element.PD_QTY,
                         pdFree: element.PD_FREE,
                         pdTotal: element.PD_PUR_RATE * element.PD_QTY,
@@ -842,7 +859,7 @@ function BillReceipt() {
                         setPmLedgerId(element.AG_ID);
                     }
                 });
-        
+       
                 setPmType("Retail");
 
                 clearPurchaseDetailsForm();
@@ -1004,13 +1021,14 @@ function BillReceipt() {
                     title1={DialogBoxTitle}
                     title2={"Bill Receipt"}
                 >
+                    <div className="max-w-5xl mx-auto">
                     {/* Input Fields */}
                     <div
                         onKeyDown={handlekeySubmit}
                         className="max-h-[70vh] mt-3 overflow-auto hide-scrollbar"
                     >
                         {/* 1. Purchase Master Fields */}
-                        <div className="grid grid-cols-2 px-5 py-1 gap-x-5 gap-y-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-5 max-h-[70vh] overflow-y-auto hide-scrollbar">
+                        <div className="grid grid-cols-2 px-5 py-1 gap-x-5 gap-y-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 2xl:grid-cols-6 max-h-[70vh] overflow-y-auto hide-scrollbar">
                             {/* <div className="hidden">
                                 <TextFieldTopLabeled
                                     label="Id"
@@ -1023,6 +1041,7 @@ function BillReceipt() {
                             </div> */}
                             <TextFieldTopLabeled
                                 label="Bill No"
+                                type="number"
                                 placeholder="Enter"
                                 className="w-1/2"
                                 minWidth={100}
@@ -1037,7 +1056,7 @@ function BillReceipt() {
                                 }}
                                 list={"purchase-type"}>
 
-                                <datalist id="purchase-type" className="bg-white">
+                                {/* <datalist id="purchase-type" className="bg-white">
                                     {GC?.typeMasterData?.map((element, index) => {
                                         if (element.TNM_NAME === "Purchase Type") {
                                             return (
@@ -1049,13 +1068,23 @@ function BillReceipt() {
                                             );
                                         }
                                     })}
-                                </datalist>
+                                </datalist> */}
                             </TextFieldTopLabeled>
-                            <input
-                            type="text"
-                            value={dateTime}
-                            readOnly>
-                            </input>
+                            <DateTopLabeled
+                                label="Date"
+                                value={date}
+                                onChange={(e) => handleTodaysDate(e.target.value)}
+                                className="w-[100]"
+                                minWidth="5px"
+                            />
+                            <TextFieldTopLabeled
+                                label="Time"
+                                placeholder="Enter Time"
+                                value={time}
+                                className="w-[100]"
+                                minWidth="5px"
+                                onChange={(e) => setTime(e.target.value)}
+                            />
                             {/* <TextFieldTopLabeled
                                 label="Bill Date T"
                                 type="number"
@@ -1071,7 +1100,7 @@ function BillReceipt() {
                                 minWidth='5px'
                                 setState={handleCheckboxChange}
                             />
-                            <TextFieldTopLabeled
+                            {/* <TextFieldTopLabeled
                                     label="Name"
                                     type="text"
                                     className="w-[100]"
@@ -1091,7 +1120,7 @@ function BillReceipt() {
                             ></TextFieldTopLabeled>
                         </div>
                         <div className="grid grid-cols-2 px-5 py-1 gap-x-5 gap-y-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 2xl:grid-cols-6 max-h-[70vh] overflow-y-auto hide-scrollbar">
-                        
+                         */}
                             {/* <DateTopLabeled
                                 label="Inward Date"
                                 placeholder="Enter"
@@ -1105,15 +1134,132 @@ function BillReceipt() {
                                 required={true}
                                 onChange={(e) => setPmReference(e.target.value)}
                             ></TextFieldTopLabeled> */}
-                            
+                           
                             {/* <DateTopLabeled
                                 label="Name"
                                 placeholder="Enter"
                                 // value={pmPurchaseDate}
                                 // onChange={(e) => setPmPurchaseDate(e.target.value)}
                             ></DateTopLabeled> */}
+                             <div  className="col-span-2 flex items-center mb-2">
+                                    <div className="w-[300px] mr-1">
+                                        <label className="text-xs">
+                                            <div>Name<span className="text-red-600">*</span></div>
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 mt-1 border rounded"
+                                                // value={field.company}
+                                                // onChange={(e) => handleCompanyAmountChange(index, 'company', e.target.value)}
+                                            />
+                                           
+                                        </label>
+                                    </div>
+                                 
+                                    <div className="flex items-center ml-2">
+                                        {/* {companyAmountFields.length < 3 && index === companyAmountFields.length - 1 && ( */}
+                                            <button
+                                                type="button"
+                                                // onClick={addCompanyAmountField}
+                                                className="mt-3 ml-2 h-8 w-8 p-1 bg-blue-500 text-white rounded"
+                                                >
+                                                      <span>&#x25BC;</span>
+
+                                            </button>
+                                        {/* )} */}
+                                        </div>
+      
+      
+      {/* <button
+    //   onClick={fetchData}
+                                                type="button"
+                                                className="mt-3 ml-2 h-8 w-8 p-1 bg-blue-500 text-white rounded"
+                                                >
+                                                +
+                                            </button> */}
+      {/* {isLoading && <p>Loading...</p>} */}
+      {/* {isError && <p>Error fetching data.</p>} */}
+      {/* {data && (
+        <div className="mt-4">
+          <div>
+            <span style={{ fontSize: '12px' }}>Name:</span>
+            <span className="ml-2">{data.name}</span>
+          </div>
+          <div>
+            <span style={{ fontSize: '12px' }}>Age/Sex:</span>
+            <span className="ml-2">{data.ageSex}</span>
+          </div>
+          <div>
+            <span style={{ fontSize: '12px' }}>Address:</span>
+            <span className="ml-2">{data.address}</span>
+          </div>
+          <div>
+            <span style={{ fontSize: '12px' }}>Cons Dr:</span>
+            <span className="ml-2">{data.consDr}</span>
+          </div>
+          <div>
+            <span style={{ fontSize: '12px' }}>Ref Dr:</span>
+            <span className="ml-2">{data.refDr}</span>
+          </div>
+        </div>
+      )} */}
+    </div>
+
+                            {/* <TextFieldTopLabeled
+                                label="Name"
+                                placeholder="Enter"
+                                lassName="w-[100]"
+                                    minWidth={100}
+                                value={pmAcName}
+                                required={true}
+                            >
+                            </TextFieldTopLabeled> */}
+                            {/* <TextFieldTopLabeled
+                                label="IPD NO"
+                                placeholder="Enter"
+                                lassName="w-[100]"
+                                    minWidth={100}
+                                required={true}
+                            >
+                            </TextFieldTopLabeled>
 
                             <TextFieldTopLabeled
+                                label="Patient ID"
+                                type="number"
+                                placeholder="Enter"
+                                lassName="w-[100]"
+                                    minWidth={100}
+                                value={pmCrLimit}
+                                onChange={(e) => setPmCrLimit(e.target.value)}
+                            ></TextFieldTopLabeled> */}
+
+                            {/* <TextFieldTopLabeled
+                                label="Address"
+                                placeholder="Enter"
+                                lassName="w-[100]"
+                                    minWidth={100}
+                                value={pmPo}
+                                onChange={(e) => setPmPo(e.target.value)}
+                            ></TextFieldTopLabeled>
+                             
+                            <TextFieldTopLabeled
+                                label="Cons. Dr."
+                                type="text"
+                                lassName="w-[100]"
+                                    minWidth={100}
+                                placeholder="Enter"
+                                value={pmGrossAmt}
+                                onChange={(e) => setPmGrossAmt(e.target.value)}
+                            ></TextFieldTopLabeled>
+                            <TextFieldTopLabeled
+                                label="Ref. Dr."
+                                type="text"
+                                lassName="w-[100]"
+                                    minWidth={100}
+                                placeholder="Enter"
+                                value={pmAmt}
+                                onChange={(e) => setPmAmt(e.target.value)}
+                            ></TextFieldTopLabeled> */}
+                              <TextFieldTopLabeled
                                 label="Case NO"
                                 placeholder="Enter"
                                 lassName="w-[100]"
@@ -1141,33 +1287,12 @@ function BillReceipt() {
                                 onChange={(e) => setPmCrLimit(e.target.value)}
                             ></TextFieldTopLabeled>
 
-                            <TextFieldTopLabeled
-                                label="Address"
-                                placeholder="Enter"
-                                lassName="w-[100]"
-                                    minWidth={100}
-                                value={pmPo}
-                                onChange={(e) => setPmPo(e.target.value)}
-                            ></TextFieldTopLabeled>
-                             
-                            <TextFieldTopLabeled
-                                label="Cons. Dr."
-                                type="text"
-                                lassName="w-[100]"
-                                    minWidth={100}
-                                placeholder="Enter"
-                                value={pmGrossAmt}
-                                onChange={(e) => setPmGrossAmt(e.target.value)}
-                            ></TextFieldTopLabeled> 
-                            <TextFieldTopLabeled
-                                label="Ref. Dr."
-                                type="text"
-                                lassName="w-[100]"
-                                    minWidth={100}
-                                placeholder="Enter"
-                                value={pmAmt}
-                                onChange={(e) => setPmAmt(e.target.value)}
-                            ></TextFieldTopLabeled>
+                            {/* <div style={{ fontSize: '12px', marginBottom:'10px' }} className="col-span-2">Name:</div>
+                            <div style={{ fontSize: '12px', marginBottom:'10px'}}>Age/Sex:</div>
+                            <div style={{ fontSize: '12px',marginBottom:'10px' }}>Address:</div>
+                            <div style={{ fontSize: '12px',marginBottom:'10px' }}>Cons Dr:</div>
+                            <div style={{ fontSize: '12px',marginBottom:'10px' }}>Ref Dr:</div> */}
+
                             {/* <TextFieldTopLabeled
                                 label="Total Qty"
                                 type="number"
@@ -1252,13 +1377,13 @@ function BillReceipt() {
                                                 setPdId(
                                                     element?.getAttribute("data-item-id") || ""
                                                 );
-                                                setPdPack(element?.getAttribute("data-pack") || "");
+                                                setpdRate(element?.getAttribute("data-pack") || "");
                                                 setPdMRP(element?.getAttribute("data-mrp") || "");
                                                 setPdPurRate(
                                                     element?.getAttribute("data-purchase-rate") ||
                                                     ""
                                                 );
-                                                setPdSalesRate(
+                                                setpdRateQty(
                                                     element?.getAttribute("data-sale-rate") || ""
                                                 );
                                                 setSgst(element?.getAttribute("data-sgst") || "");
@@ -1296,9 +1421,9 @@ function BillReceipt() {
                                         <input
                                             type="text"
                                             className="w-full p-2 mt-1 border rounded"
-                                            value={pdParticular}
+                                            // value={pdParticular}
                                             onChange={(e) => {
-                                                setPdParticular(e.target.value);
+                                                // setPdParticular(e.target.value);
                                                 let element = document.querySelector(
                                                     `#itemIdList [value="${e.target.value}"]`
                                                 );
@@ -1306,13 +1431,13 @@ function BillReceipt() {
                                                 setPdId(
                                                     element?.getAttribute("data-item-id") || ""
                                                 );
-                                                setPdPack(element?.getAttribute("data-pack") || "");
+                                                setpdRate(element?.getAttribute("data-pack") || "");
                                                 setPdMRP(element?.getAttribute("data-mrp") || "");
                                                 setPdPurRate(
                                                     element?.getAttribute("data-purchase-rate") ||
                                                     ""
                                                 );
-                                                setPdSalesRate(
+                                                setpdRateQty(
                                                     element?.getAttribute("data-sale-rate") || ""
                                                 );
                                                 setSgst(element?.getAttribute("data-sgst") || "");
@@ -1349,25 +1474,18 @@ function BillReceipt() {
                                             type="text"
                                             className="w-full p-2 mt-1 border rounded"
                                             disabled={false}
-                                            value={pdPack}
+                                            value={pdRate}
                                             onChange={(e) => {
                                                 let rate = e.target.value;
-                                                let total = Number(pdPurRate * qty);
+                                                let total = Number(rate * pdQty);
                                                 let discountAmount = (total * pdDiscPer) / 100;
 
-                                                let totalGst =
-                                                    Number(sgst) + Number(cgst) + Number(igst);
-                                                let totalAmtAfterGst =
-                                                    total + (total * totalGst) / 100;
-                                                
-                                                setPdSalesRate(qty * pdPack);
-                                                setPdQty(qty);
-                                                setPdTotal(pdPurRate * qty);
+                                               
+                                                setpdRate(e.target.value)
+                                                setpdRateQty(rate * pdQty);
                                                 setPdDiscAmt(discountAmount);
                                                 setPdTotalAfterDisc(total - discountAmount);
                                                 setPdGrandTotal(total - discountAmount);
-                                                setPdPack(e.target.value)
-                                                setPdSalesRate(rate * pdPack);
                                             }}
                                         />
                                     </label>
@@ -1384,17 +1502,12 @@ function BillReceipt() {
                                             onKeyDown={handlekeyAdd}
                                             onChange={(e) => {
                                                 let qty = e.target.value;
-                                                let total = Number(pdPurRate * qty);
+                                                let total = Number(pdRate * qty);
                                                 let discountAmount = (total * pdDiscPer) / 100;
 
-                                                let totalGst =
-                                                    Number(sgst) + Number(cgst) + Number(igst);
-                                                let totalAmtAfterGst =
-                                                    total + (total * totalGst) / 100;
-                                                
-                                                setPdSalesRate(qty * pdPack);
+                                               
+                                                setpdRateQty(qty * pdRate);
                                                 setPdQty(qty);
-                                                setPdTotal(pdPurRate * qty);
                                                 setPdDiscAmt(discountAmount);
                                                 setPdTotalAfterDisc(total - discountAmount);
                                                 setPdGrandTotal(total - discountAmount);
@@ -1433,9 +1546,9 @@ function BillReceipt() {
                                             type="number"
                                             className="w-full p-2 mt-1 border rounded "
                                             disabled={true}
-                                            value={pdSalesRate}
+                                            value={pdRateQty}
                                             onChange={(e) => {
-                                                setPdSalesRate(e.target.value);
+                                                setpdRateQty(e.target.value);
 
                                                 // Remove calculations related to sales rate
 
@@ -1518,13 +1631,13 @@ function BillReceipt() {
                                             value={pdDiscPer}
                                             onChange={(e) => {
                                                 let discountPercentage = e.target.value;
-                                                let discountAmount =
-                                                    (pdTotal * discountPercentage) / 100;
+                                                let total = Number(pdRate * pdQty);
+                                                let discountAmount = (total * discountPercentage) / 100;
 
                                                 setPdDiscPer(discountPercentage);
                                                 setPdDiscAmt(discountAmount);
-                                                setPdTotalAfterDisc(pdTotal - discountAmount);
-                                                setPdGrandTotal(pdTotal - discountAmount);
+                                                setPdTotalAfterDisc(total - discountAmount);
+                                                setPdGrandTotal(total - discountAmount);
                                             }}
                                         />
                                     </label>
@@ -1632,21 +1745,25 @@ function BillReceipt() {
                                 </thead>
                                 <tbody>
                                     {purchaseDetailsArray.map((element, index) => {
+                                         // Calculate the cumulative total for the current row
+                                        const currentCumulativeTotal = purchaseDetailsArray
+                                        .slice(0, index + 1) // Consider elements up to the current index
+                                        .reduce((acc, curr) => acc + (parseFloat(curr.pdGrandTotal) || 0), 0);
+
                                         return (
                                             <tr key={index}>
 
-                                                <td>{element.pdItemId}</td>
+                                                <td>{index + 1}</td>
                                                 <td>{element.pdItemId}</td>
                                                 <td>{element.pdParticular}</td>
                                                 <td>{element.pdParticular}</td>
-                                                <td>{element.pdPack}</td>
+                                                <td>{element.pdRate}</td>
                                                 <td>{element.pdQty}</td>
-                                                <td>{element.pdSalesRate}</td>
+                                                <td>{element.pdRateQty}</td>
                                                 <td>{element.pdDiscPer}</td>
                                                 <td>{element.pdDiscAmt}</td>
                                                 <td>{element.pdTotalAfterDisc}</td>
-                                                <td>{element.pdGrandTotal}</td>
-                                                <td>{element.lmNarration}</td>
+                                                <td>{currentCumulativeTotal}</td>                                                <td>{element.lmNarration}</td>
                                                 {/* <td>{element.pdPurRate}</td> */}
                                                 {/* <td>{element.pdBatchNo}</td> */}
                                                 {/* <td className="min-w-[200px]">{element.pdDoe}</td> */}
@@ -1686,25 +1803,58 @@ function BillReceipt() {
                         </div>
 
                         {/* 5. Fields */}
-                        <div className="grid grid-cols-1 px-5 pb-5 gap-x-4 gap-y-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3 max-h-[70vh] overflow-y-auto hide-scrollbar">
-                            <TextFieldTopLabeled
-                                label="Company A AMT"
-                                className="w-[100]"
-                                width={100}
-                                type="number"
-                                disabled={true}
-                                placeholder="Auto"
-                                value={purchaseDetailsArrayQty}
-                            ></TextFieldTopLabeled>
-                            <TextFieldTopLabeled
-                                label="Company B AMT"
-                                type="number"
-                                className="w-[100]"
-                                width={100}
-                                disabled={true}
-                                placeholder="Auto"
-                                value={pdExcludedTotal}
-                            ></TextFieldTopLabeled>
+                        <div className="grid grid-cols-1 px-5 pb-5 gap-x-4 gap-y-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 max-h-[70vh] overflow-y-auto hide-scrollbar">
+                            {companyAmountFields.map((field, index) => (
+                                <div key={index} className="flex items-center mb-2">
+                                    <div className="w-[200px] mr-2">
+                                        <label className="text-xs">
+                                            <div>Company Amount<span className="text-red-600">*</span></div>
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 mt-1 border rounded"
+                                                value={field.company}
+                                                onChange={(e) => handleCompanyAmountChange(index, 'company', e.target.value)}
+                                                list="companyAmountList"
+                                            />
+                                            <datalist id="companyAmountList">
+                                                <option value="Company A"></option>
+                                                <option value="Company B"></option>
+                                            </datalist>
+                                        </label>
+                                    </div>
+                                    <div className="w-[100px]">
+                                        <label className="text-xs">
+                                            <div>Amount</div>
+                                            <input
+                                                type="number"
+                                                className="w-full p-2 mt-1 border rounded"
+                                                value={field.amount}
+                                                onChange={(e) => handleCompanyAmountChange(index, 'amount', e.target.value)}
+                                            />
+                                        </label>
+                                    </div>
+                                    <div className="flex items-center ml-2">
+                                        {companyAmountFields.length < 3 && index === companyAmountFields.length - 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={addCompanyAmountField}
+                                                className="mt-3 ml-2 h-8 w-8 p-1 bg-blue-500 text-white rounded"
+                                                >
+                                                +
+                                            </button>
+                                        )}
+                                        {companyAmountFields.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeCompanyAmountField(index)}
+                                                className="ml-1 mt-3 h-8 w-8 p-1 bg-red-500 text-white rounded flex items-center justify-center"
+                                                >
+                                                -
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
                             <TextFieldTopLabeled
                                 label="Grand Total"
                                 type="number"
@@ -1714,7 +1864,7 @@ function BillReceipt() {
                                 placeholder="Auto"
                                 value={purchaseDetailsArrayGrandTotal}
                             ></TextFieldTopLabeled>
-                            <div className="col-span-3">
+                            <div className="col-span-4">
                                 <TextFieldTopLabeled
                                     label="Narration"
                                     className="w-[100]"
@@ -1756,60 +1906,61 @@ function BillReceipt() {
                             />
                         </div>
                     </div>
+                    </div>
                 </DialogBox>
             </div>
         </div>
     );
 }
-function handleDelete(param) {
-    // Assuming you have a unique identifier in your data, for example, PAYM_ID
-    const PM_IDToDelete = param.row.PM_ID;
+// function handleDelete(param) {
+//     // Assuming you have a unique identifier in your data, for example, PAYM_ID
+//     const PM_IDToDelete = param.row.PM_ID;
 
-    // Confirm deletion with the user
-    const isConfirmed = window.confirm("Are you sure you want to delete this record?");
+//     // Confirm deletion with the user
+//     const isConfirmed = window.confirm("Are you sure you want to delete this record?");
 
-    if (isConfirmed) {
-        FetchData("POST", "/api/purchase-master/delete-row", {
-            PM_ID: param.row.PM_ID,
-        }).then((res) => {
-            console.log(res);
-            if (!res) return;
-            if (res.isSuccess) {
-                toast.success(res.message || "Row deleted");
-                if (res.data?.purchaseMasterData) {
-                    GC?.setPurchaseMasterData(res.data?.purchaseMasterData); // Corrected typo here
-                }
-            } else {
-                toast.error(res?.message || "Failed to delete row");
-            }
-        });
-        // Perform the delete operation here
-        // You might want to make an API call to delete the record on the server
-        // After successful deletion, update your local state or refetch data
+//     if (isConfirmed) {
+//         FetchData("POST", "/api/purchase-master/delete-row", {
+//             PM_ID: param.row.PM_ID,
+//         }).then((res) => {
+//             console.log(res);
+//             if (!res) return;
+//             if (res.isSuccess) {
+//                 toast.success(res.message || "Row deleted");
+//                 if (res.data?.purchaseMasterData) {
+//                     GC?.setPurchaseMasterData(res.data?.purchaseMasterData); // Corrected typo here
+//                 }
+//             } else {
+//                 toast.error(res?.message || "Failed to delete row");
+//             }
+//         });
+//         // Perform the delete operation here
+//         // You might want to make an API call to delete the record on the server
+//         // After successful deletion, update your local state or refetch data
 
-        // Example:
-        // Your API call or logic to delete the record
-        // deleteRecord(PAYM_IDToDelete)
-        //   .then(() => {
-        //     // Update local state or refetch data after successful deletion
-        //     fetchPaymentMasterData();
-        //   })
-        //   .catch((error) => {
-        //     console.error("Error deleting record:", error);
-        //   });
+//         // Example:
+//         // Your API call or logic to delete the record
+//         // deleteRecord(PAYM_IDToDelete)
+//         //   .then(() => {
+//         //     // Update local state or refetch data after successful deletion
+//         //     fetchPaymentMasterData();
+//         //   })
+//         //   .catch((error) => {
+//         //     console.error("Error deleting record:", error);
+//         //   });
 
-        // For now, let's simulate the update locally
-        const updatedPurchaseMasterData = GC?.purchaseMasterData?.filter(
-            (element) => element.PM_ID !== PM_IDToDelete
-        );
+//         // For now, let's simulate the update locally
+//         const updatedPurchaseMasterData = GC?.purchaseMasterData?.filter(
+//             (element) => element.PM_ID !== PM_IDToDelete
+//         );
 
-        // Update the local state
-        GC?.setPurchaseMasterData(updatedPurchaseMasterData);
+//         // Update the local state
+//         GC?.setPurchaseMasterData(updatedPurchaseMasterData);
 
-        // Optionally, you can show a success message
-        toast.success("Record deleted successfully");
-    }
-}
+//         // Optionally, you can show a success message
+//         toast.success("Record deleted successfully");
+//     }
+// }
 
 
 export default BillReceipt;

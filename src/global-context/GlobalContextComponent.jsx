@@ -28,6 +28,9 @@ function GlobalContextComponent(props) {
     let [purchaseMasterData, setPurchaseMasterData] = useState([]);
     let [purchaseDetailsData, setPurchaseDetailsData] = useState([]);
     
+    //
+    let [patientMasterData, setPatientMasterData] = useState([]);
+    let [patientDetailsData, setPatientDetailsData] = useState([]);
 
     //
     let [paymentMasterData, setPaymentMasterData] = useState([]);
@@ -70,6 +73,11 @@ function GlobalContextComponent(props) {
                 setPurchaseMasterData,
                 purchaseDetailsData,
                 setPurchaseDetailsData,
+
+                patientMasterData,
+                setPatientMasterData,
+                patientDetailsData,
+                setPatientDetailsData,
 
                 paymentMasterData,
                 setPaymentMasterData,
