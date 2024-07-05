@@ -634,18 +634,18 @@
                             },
                             },
                             {
-                                field: "RM_UNDER_ID",
-                                headerName: "PT ID",
+                                field: "RD_CASE_NO",
+                                headerName: "Case No",
                                 width: 100,
                             },
                             {
-                                field: "RM_TITLE",
-                                headerName: "Case NO",
+                                field: "RD_DateTime",
+                                headerName: "Date Time",
                                 width: 80,
                             },
                             {
-                                field: "RM_TITLE",
-                                headerName: "Date/Time",
+                                field: "RD_OLD_NEW",
+                                headerName: "OLD/NEW",
                                 width: 80,
                             },
                             
@@ -656,39 +656,64 @@
                                 minWidth: 150,
                             },
                             {
-                                field: "RM_GENDER",
-                                headerName: "Gender",
+                                field: "RM_MOBILE",
+                                headerName: "Mobile",
                                 width: 80,
                             },
                             {
-                                field: "RM_MARITAL_STATUS",
-                                headerName: "Marital Status",
+                                field: "RD_ADDRESS",
+                                headerName: "Address",
+                                width: 80,
+                            },
+                            {
+                                field: "RD_AREA",
+                                headerName: "Area",
+                                width: 80,
+                            },
+                            {
+                                field: "RD_CITY",
+                                headerName: "City",
+                                width: 80,
+                            },
+                            {
+                                field: "RD_PHONE",
+                                headerName: "Phone",
+                                width: 80,
+                            },
+                            {
+                                field: "RD_DOB",
+                                headerName: "DOB",
+                                width: 80,
+                            },
+                            {
+                                field: "RD_YEAR",
+                                headerName: "Age",
+                                width: 80,
+                            },
+                            {
+                                field: "RM_GENDER",
+                                headerName: "Sex",
+                                width: 80,
+                            },
+                            {
+                                field: "RM_COMPANY_ID",
+                                headerName: "Company Name",
                                 width: 120,
                             },
                             {
-                                field: "RM_Photo",
-                                headerName: "Photo",
+                                field: "RD_REF_DR_ID",
+                                headerName: "Reference Doctor",
                                 width: 100,
-                                renderCell: (param) => (
-                                    <img src={param.formattedValue} alt="Photo" width={50} height={50} />
-                                ),
                             },
                             {
-                                field: "RM_AADHAR_CARD",
-                                headerName: "Aadhar Card",
+                                field: "RD_CON_DR_ID",
+                                headerName: "Consulting Doctor",
+                                width: 100,
+                            },
+                            {
+                                field: "RD_PRD_NARRATION",
+                                headerName: "Narration",
                                 width: 150,
-                            },
-                            {
-                                field: "RM_YEAR",
-                                headerName: "Year",
-                                flex: 1,
-                                minWidth: 100,
-                            },
-                            {
-                                field: "RM_COMP_ID",
-                                headerName: "Company ID",
-                                flex: 1,
-                                minWidth: 100,
                             },
                             {
                                 field: "RM_CREATED_BY",
@@ -698,7 +723,7 @@
                             },
                             {
                                 field: "RM_CREATED_DATE",
-                                headerName: "Created Date",
+                                headerName: "Created Date Time",
                                 flex: 1,
                                 minWidth: 150,
                                 renderCell: (param) => param.formattedValue ? String(param.formattedValue).replace("T", " ").substring(0, 16) : "-",
@@ -715,7 +740,7 @@
                             },
                             {
                                 field: "RM_UPDATED_DATE",
-                                headerName: "Updated Date",
+                                headerName: "Updated Date Time",
                                 flex: 1,
                                 minWidth: 150,
                                 renderCell: (param) => {
@@ -735,10 +760,12 @@
                             minWidth: 150,
                             },
                             ]}
-                            rows={GC.patientMasterData.map((element, index) => {
+                            rows={GC.patientMasterData.map((element) => {
+                                const details = GC.patientDetailsData.find(detail => detail.RD_PT_ID === element.RM_PT_ID);
                             return {
-                            id: element.RM_PT_ID,
-                            ...element,
+                                id: element.RM_PT_ID,
+                                ...element,
+                                ...details,
                             };
                             })}
                             setApiRef={setApiRef}

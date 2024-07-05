@@ -16,10 +16,11 @@ function Protected(props) {
         FetchData("POST", "/api/validate-token", {}).then((res) => {
             if (res?.isSuccess) {
                 FetchData("POST", "/api/get-master-data", {}).then((res) => {
-                    console.log(res?.data?.patientMasterData);
+                    console.log(res?.data?.patientDetailsData);
                     if (res.isSuccess) {
                         GC.setLedgerMasterData(() => res?.data?.ledgerMasterData);
                         GC.setPatientMasterData(() => res?.data?.patientMasterData);
+                        GC.setPatientDetailsData(() => res?.data?.patientDetailsData);
                         GC.setAccountGroupData(() => res?.data?.accountGroupData);
                         GC.setTypeMasterData(() => res?.data?.typeMasterData);
                         GC.setTypeNameMasterData(() => res?.data?.typeNameMasterData);
