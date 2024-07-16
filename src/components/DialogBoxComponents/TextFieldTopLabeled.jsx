@@ -13,6 +13,7 @@ function CustomTextField2(props) {
                 {props.label}
                 {props.required && <span className="ml-1 text-red-500 ">*</span>}
             </label>
+            
             <input
                 type={props.type || "text"}
                 className={`p-2 text-xs border rounded grow placeholder:text-xs focus:border-first max-h-[34px]`}

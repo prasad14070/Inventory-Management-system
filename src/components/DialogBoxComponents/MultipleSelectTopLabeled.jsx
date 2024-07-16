@@ -1,42 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { GrClose } from "react-icons/gr";
 
 function MultipleSelectTopLabeled(props) {
-    let [optionVisible, setOptionVisible] = useState(false);
-    let [optionData, setOptionData] = useState(props.optionData);
+    const [optionVisible, setOptionVisible] = useState(false);
+    const [optionData, setOptionData] = useState(props.optionData);
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+        setOptionData(props.optionData);
+    }, [props.optionData]);
 
     function handlerRemoveFromSelection(element) {
         props.setState((old) => {
             const index = old.indexOf(element);
             if (index > -1) {
-                old.splice(index, 1);
-                return [...old];
+                const newState = [...old.slice(0, index), ...old.slice(index + 1)];
+                props.onChange && props.onChange(newState);
+                return newState;
             }
+            return old;
         });
     }
 
     function handlerAddToSelection(element) {
         props.setState((old = []) => {
             if (!old.includes(element)) {
-                return [...old, element];
-            } else {
-                return old;
+                const newState = [...old, element];
+                props.onChange && props.onChange(newState);
+                return newState;
             }
+            return old;
         });
     }
 
     function filterOptionData(e) {
-        setOptionData(() => {
-            return props.optionData?.filter((element, index) => {
-                if (String(element).toLowerCase().includes(String(e.target.value).toLowerCase())) {
-                    return true;
-                }
-            });
-        });
+        const value = e.target.value.toLowerCase();
+        setOptionData(props.optionData.filter((element) => element.toLowerCase().includes(value)));
     }
 
+    // Handle click outside to close dropdown
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (inputRef.current && !inputRef.current.contains(event.target)) {
+                setOptionVisible(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [inputRef]);
+
     return (
-        <div className="flex flex-col gap-1 grow-0">
+        <div className="flex flex-col gap-1 grow-0 relative" ref={inputRef}>
             {/* Label */}
             <label htmlFor="id" className="text-xs">
                 {props.label}
@@ -46,58 +63,43 @@ function MultipleSelectTopLabeled(props) {
             {/* Input element */}
             <input
                 type={props.type || "text"}
-                className="p-2 border rounded grow min-w-[250px] text-xs placeholder:text-xs"
+                className="p-2 border rounded grow min-w-[100px] max-h-[35px] text-xs placeholder:text-xs"
                 placeholder={props.placeholder}
                 disabled={props.disabled}
-                onKeyDown={props.onKeyDown}
-                onChange={(e) => filterOptionData(e)}
+                onChange={filterOptionData}
                 onFocus={() => setOptionVisible(true)}
-                onBlur={(e) => {
-                    setTimeout(function () {
-                        setOptionVisible(false);
-                    }, 150);
-                }}
             />
 
             {/* Select & Option */}
             {optionVisible && (
-                <div className="absolute bg-white">
-                    <div className="w-[270px] top-[57px] absolute z-[100] py-1 bg-white border border-gray-400 rounded">
-                        {optionData?.map((element, index) => {
-                            return (
-                                <div
-                                    key={index}
-                                    className="px-2 text-sm text-black cursor-pointer min-w-[200px] hover:bg-first hover:text-white"
-                                    value={element}
-                                    onClick={() => handlerAddToSelection(element)}
-                                >
-                                    {element}
-                                </div>
-                            );
-                        })}
+                <div className="absolute bg-white z-10 w-full">
+                    <div className="absolute w-full z-[100] py-1 bg-white border border-gray-400 rounded">
+                        {optionData?.map((element, index) => (
+                            <div
+                                key={index}
+                                className="px-2 text-sm text-black cursor-pointer hover:bg-first hover:text-white"
+                                onClick={() => handlerAddToSelection(element)}
+                            >
+                                {element}
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}
 
-            {/* Selected Valued */}
+            {/* Selected Values */}
             <div className="flex flex-wrap rounded" style={{ maxWidth: props.maxWidth }}>
-                {props.state?.map((element, index) => {
-                    if (!element) return null;
-                    return (
-                        <div
-                            className="flex items-center justify-between gap-2 px-2 py-1 m-1 text-xs bg-gray-300 rounded grow"
-                            key={index}
-                        >
-                            <div>{element}</div>
-                            <div
-                                className="cursor-pointer"
-                                onClick={() => handlerRemoveFromSelection(element)}
-                            >
-                                <GrClose></GrClose>
-                            </div>
+                {props.state?.map((element, index) => (
+                    <div
+                        className="flex items-center justify-between gap-2 px-2 py-1 m-1 text-xs bg-gray-300 rounded grow"
+                        key={index}
+                    >
+                        <div>{element}</div>
+                        <div className="cursor-pointer" onClick={() => handlerRemoveFromSelection(element)}>
+                            <GrClose />
                         </div>
-                    );
-                })}
+                    </div>
+                ))}
             </div>
         </div>
     );
